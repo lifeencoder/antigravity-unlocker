@@ -13,14 +13,14 @@ VSVersionInfo(
     StringFileInfo([
       StringTable(
         '040904B0',
-         [StringStruct('CompanyName', 'avencores'),
-          StringStruct('FileDescription', 'Open AG Patcher'),
-           StringStruct('FileVersion', '1.3.9'),
-          StringStruct('InternalName', 'open_ag_patcher'),
+         [StringStruct('CompanyName', 'Antigravity Community'),
+          StringStruct('FileDescription', 'Antigravity Environment & Eligibility Unlocker'),
+          StringStruct('FileVersion', '1.3.9'),
+          StringStruct('InternalName', 'antigravity_unlocker'),
           StringStruct('LegalCopyright', '© 2026'),
-          StringStruct('OriginalFilename', 'Open_AG_Patcher_Windows.exe'),
-          StringStruct('ProductName', 'Open AG Patcher'),
-           StringStruct('ProductVersion', '1.3.9')])
+          StringStruct('OriginalFilename', 'AntigravityUnlocker.exe'),
+          StringStruct('ProductName', 'Antigravity Unlocker'),
+          StringStruct('ProductVersion', '1.3.9')])
       ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])
   ]
