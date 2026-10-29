@@ -81,6 +81,30 @@ def _posix_find():
         cands.append(w)
     for root in _posix_candidate_dirs():
         cands += glob.glob(os.path.join(root, "agy"))
+    # Мод 1.3.9, явные фолбэки: не зависят от PATH и от isdir-фильтра выше.
+    # Чинят кейс "CLI path is not set", когда agy лежит в ~/.local/bin,
+    # а патчер запущен с аргументом, под sudo без PATH или из symlink.
+    try:
+        explicit = [
+            os.path.expanduser("~/.local/bin/agy"),
+            os.path.expanduser("~/bin/agy"),
+            "/usr/local/bin/agy",
+            "/usr/bin/agy",
+            "/opt/antigravity/bin/agy",
+            "/opt/antigravity/agy",
+        ]
+        # Дом вызывающего пользователя при sudo (важно для `sudo main.py`).
+        try:
+            from patcher.utils.file import get_posix_invoking_user_home
+            uh = get_posix_invoking_user_home()
+            if uh:
+                explicit.append(os.path.join(uh, ".local/bin/agy"))
+                explicit.append(os.path.join(uh, "bin/agy"))
+        except Exception:
+            pass
+        cands += [p for p in explicit if p and os.path.isfile(p)]
+    except Exception:
+        pass
     return _dedup_newest(cands)
 
 

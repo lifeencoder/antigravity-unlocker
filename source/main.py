@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import os
 
@@ -14,22 +15,55 @@ if __name__ == "__main__":
         else:
             print("  [!] Could not elevate privileges. The script may fail to modify files.")
     elif os.name == "posix" and not is_admin():
-        print("  [!] Root access is required to patch files in the root directory.")
-        if confirmed("Re-launch with sudo?"):
-            try:
-                if getattr(sys, "frozen", False):
-                    args = ["sudo", sys.executable] + sys.argv[1:]
-                else:
-                    args = ["sudo", sys.executable] + sys.argv
-                os.execvp("sudo", args)
-            except Exception as e:
-                print(f"  [!] Failed to re-launch with sudo: {e}")
-                sys.exit(1)
-        else:
-            from patcher.constants import COLOR_YELLOW
+        # Мод 1.3.9: sudo нужен только для системных путей (/usr/share, /opt,
+        # /Applications). Юзерская установка (~/.local/bin/agy, ~/Загрузки/...)
+        # патчится без root — не дёргаем пользователя лишним вопросом.
+        _needs_root = False
+        try:
+            from patcher.utils.file import get_posix_invoking_user_home
+            uh = get_posix_invoking_user_home() or os.path.expanduser("~")
+            user_targets = [
+                os.path.join(uh, ".local", "bin", "agy"),
+                os.path.join(uh, "bin", "agy"),
+            ]
+            argv_paths = [a for a in sys.argv[1:] if a not in ("--rollback", "-r")]
+            user_targets += argv_paths
+            for t in user_targets:
+                try:
+                    p = os.path.abspath(os.path.expandvars(os.path.expanduser(t)))
+                    if os.path.isfile(p) and os.access(p, os.W_OK):
+                        break
+                    d = p if os.path.isdir(p) else os.path.dirname(p)
+                    if d and os.path.isdir(d) and os.access(d, os.W_OK):
+                        break
+                except Exception:
+                    continue
+            else:
+                _needs_root = True
+        except Exception:
+            _needs_root = True
+        if not _needs_root:
+            from patcher.constants import COLOR_GREEN
             from patcher.utils.console import color
-            print(color("  [!] Proceeding without root. Write errors are possible.", COLOR_YELLOW))
+            print(color("  [+] User-local install detected — proceeding without sudo.", COLOR_GREEN))
             print()
+        else:
+            print("  [!] Root access is required to patch files in the root directory.")
+            if confirmed("Re-launch with sudo?"):
+                try:
+                    if getattr(sys, "frozen", False):
+                        args = ["sudo", sys.executable] + sys.argv[1:]
+                    else:
+                        args = ["sudo", sys.executable] + sys.argv
+                    os.execvp("sudo", args)
+                except Exception as e:
+                    print(f"  [!] Failed to re-launch with sudo: {e}")
+                    sys.exit(1)
+            else:
+                from patcher.constants import COLOR_YELLOW
+                from patcher.utils.console import color
+                print(color("  [!] Proceeding without root. Write errors are possible.", COLOR_YELLOW))
+                print()
 
     try:
         run_cli()

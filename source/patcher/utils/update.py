@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import urllib.request
 import urllib.error
@@ -8,10 +9,11 @@ from patcher.constants import VERSION, COLOR_CYAN, COLOR_GREEN, COLOR_YELLOW, CO
 from patcher.utils.console import color, link, info, ok, warn, err, hint, _frame_border, _frame_row
 
 
-GITHUB_REPO = "AvenCores/open-antigravity-patcher"
+GITHUB_REPO = os.environ.get("OPEN_AG_REPO", "trustybird/AvenCores-open-antigravity-patcher")
 RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
 ISSUES_URL = f"https://github.com/{GITHUB_REPO}/issues"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+FALLBACK_API_URL = "https://api.github.com/repos/Milordick/open-antigravity-patcher/releases/latest"
 GOIDA_VPN_URL = "https://github.com/AvenCores/goida-vpn-configs"
 
 LAST_UPDATE_RESULT = None
@@ -74,18 +76,24 @@ def _parse_version(v):
 
 def _fetch_latest_release(timeout=5):
     """Fetch latest release info from GitHub API. Returns (tag, html_url) or (None, None)."""
-    req = urllib.request.Request(API_URL, headers={
-        "Accept": "application/vnd.github.v3+json",
-        "User-Agent": f"OpenAGPatcher/{VERSION}",
-    })
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            tag = data.get("tag_name", "")
-            html_url = data.get("html_url", "")
-            return tag, html_url
-    except Exception:
-        return None, None
+    urls = [API_URL]
+    if FALLBACK_API_URL and FALLBACK_API_URL != API_URL:
+        urls.append(FALLBACK_API_URL)
+    for url in urls:
+        req = urllib.request.Request(url, headers={
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": f"OpenAGPatcher/{VERSION}",
+        })
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                tag = data.get("tag_name", "")
+                html_url = data.get("html_url", "")
+                if tag:
+                    return tag, html_url
+        except Exception:
+            continue
+    return None, None
 
 
 def check_for_updates(silent=True, timeout=5):
@@ -159,4 +167,3 @@ def handle_patch_failure():
         if confirmed("Would you like to open GitHub to create an issue?"):
             webbrowser.open(ISSUES_URL)
             ok(f"Opening: {color(ISSUES_URL, COLOR_CYAN)}")
-

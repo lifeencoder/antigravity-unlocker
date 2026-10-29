@@ -456,24 +456,28 @@ def run_cli():
                     else:
                         err(f"Provided path does not exist or invalid: {arg}")
 
-    # 2. Проверяем текущую директорию (для Antigravity IDE)
-    if not main_js_path and not manager_path and not agy_path:
+    # 2-3. Авто-поиск в системе (мод 1.3.9: по каждой цели отдельно).
+    # Раньше поиск срабатывал только когда ВСЕ три пути пусты: запуск
+    # `main.py <ide-path>` оставлял agy/manager пустыми навсегда и пункт 3
+    # отвечал "CLI path is not set". Теперь добираем недостающее всегда.
+    if not main_js_path:
         local = os.path.join(os.getcwd(), "main.js")
         if os.path.exists(local):
             main_js_path = local
             info("Found main.js in current directory")
-
-    # 3. Авто-поиск в системе
-    if not main_js_path and not manager_path and not agy_path:
+    if not main_js_path or not manager_path or not agy_path:
         info("Searching for installations...")
         searched = True
 
-        ide_root = find_install_root()
-        if ide_root:
-            main_js_path = find_main_js(ide_root)
+        if not main_js_path:
+            ide_root = find_install_root()
+            if ide_root:
+                main_js_path = find_main_js(ide_root)
 
-        manager_path = find_manager_binary()
-        agy_path = find_agy_binary()
+        if not manager_path:
+            manager_path = find_manager_binary()
+        if not agy_path:
+            agy_path = find_agy_binary()
 
     # VS Code extension и его бинарь agy ищем всегда — независимо от того,
     # найдены ли остальные цели (это отдельный продукт со своей директорией).
@@ -585,6 +589,12 @@ def run_cli():
                     searched = False
                     do_patch(main_js_path, show_search_line=searched)
         elif choice == "2":
+            if not manager_path or not os.path.isfile(manager_path):
+                # Мод 1.3.9: повторный поиск прямо перед патчем.
+                try:
+                    manager_path = find_manager_binary() or manager_path
+                except Exception:
+                    pass
             if manager_path and os.path.isfile(manager_path):
                 do_patch_manager(manager_path)
             else:
@@ -594,6 +604,12 @@ def run_cli():
                     searched = False
                     do_patch_manager(manager_path)
         elif choice == "3":
+            if not agy_path or not os.path.isfile(agy_path):
+                # Мод 1.3.9: повторный поиск — лечит "CLI path is not set".
+                try:
+                    agy_path = find_agy_binary() or agy_path
+                except Exception:
+                    pass
             if agy_path and os.path.isfile(agy_path):
                 do_patch_agy(agy_path)
             else:

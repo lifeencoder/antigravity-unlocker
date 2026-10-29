@@ -89,8 +89,10 @@ def _posix_candidate_roots():
     
     if user_home:
         out.append(os.path.join(user_home, ".local/share"))
+        out.append(os.path.join(user_home, ".local/opt"))  # мод 1.3.9: портативный IDE
     else:
         out.append(os.path.expanduser("~/.local/share"))
+        out.append(os.path.expanduser("~/.local/opt"))  # мод 1.3.9
     return [p for p in out if p and os.path.isdir(p)]
 
 
@@ -117,6 +119,11 @@ def find_manager_binary():
         for root in _posix_candidate_roots():
             cands += glob.glob(os.path.join(root, "*ntigravity*", rel))
             cands += glob.glob(os.path.join(root, "*ntigravity*", "*", rel))
+            # Мод 1.3.9: сборки с суффиксом платформы
+            # (напр. language_server_linux_x64 из расширения).
+            cands += glob.glob(os.path.join(root, "*ntigravity*", "resources", "app", "extensions", "antigravity", "bin", "language_server*"))
+            cands += glob.glob(os.path.join(root, "antigravity-ide", "resources", "app", "extensions", "antigravity", "bin", "language_server*"))
+            cands += glob.glob(os.path.join(root, "*ntigravity*", "bin", "language_server*"))
             # macOS .app support (Resources встречается и как resources —
             # см. /Applications/Antigravity.app/Contents/resources/bin/language_server)
             if sys.platform == "darwin":
@@ -140,9 +147,11 @@ def resolve_manager_path(raw_path):
     
     if os.path.isfile(resolved):
         name = os.path.basename(resolved).lower()
-        if name in ("language_server", "language_server.exe"):
+        if name in ("language_server", "language_server.exe") or name.startswith("language_server"):
             return resolved
-        return resolved
+        # Мод 1.3.9, строго: чужой бинарь (например agy) менеджером не считаем,
+        # иначе меню показывает один файл сразу в пунктах 2.0 и CLI.
+        return ""
         
     if os.path.isdir(resolved):
         rel = os.path.join("resources", "bin", "language_server" + (".exe" if os.name == "nt" else ""))

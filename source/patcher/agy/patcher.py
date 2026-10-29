@@ -171,8 +171,65 @@ CLI_GATE = MultiGate(
     desc="eligibility screen off",
 )
 
+# ---------------------------------------------------------------------------
+# Gate 2 (мод 1.3.9): hasValidAuth внутри agy (портирован из manager-гейта).
+# Тот же AuthResult-чек, что в language_server, скомпилирован и внутри agy
+# (общий Go-код jetski/language_server_pb): cmp byte[rax+8],0 ; je skip.
+# Без него часть CLI-флоу всё равно считает auth невалидным.
+# Найден в agy 1.4.0 @ 0x848df8a (1 вхождение, unpatched даже при патченном Gate 1).
+# x64 fix: mov byte[rax+8],1 + nop*2 форсирует hasValidAuth=true.
+AUTH_GATE_X64 = Gate(
+    rb"\x80\x78\x08\x00\x74.\x48\x8b.\x24.\x48\x89.\x60",
+    rb"\xc6\x40\x08\x01\x90\x90\x48\x8b.\x24.\x48\x89.\x60",
+    b"\xc6\x40\x08\x01\x90\x90",
+    offset=0,
+    desc="hasValidAuth=true inside agy (x64)",
+)
+
+# arm64: тот же manager-паттерн (mov w3,#1 ; strb w3,[x0,#8]).
+_ARM64_TBZ_W3_BIT0 = rb"[\x03\x23\x43\x63\x83\xa3\xc3\xe3]..\x36"
+_ARM64_TOKEN_SETUP = rb"(?:....){1,2}\x03\x10\x06\xa9"
+AUTH_GATE_ARM64 = Gate(
+    rb"\x03\x20\x40\x39" + _ARM64_TBZ_W3_BIT0 + _ARM64_TOKEN_SETUP,
+    rb"\x23\x00\x80\x52\x03\x20\x00\x39" + _ARM64_TOKEN_SETUP,
+    b"\x23\x00\x80\x52\x03\x20\x00\x39",
+    offset=0,
+    desc="hasValidAuth=true inside agy (arm64)",
+)
+
+AUTH_GATE = MultiGate(
+    AUTH_GATE_X64,
+    AUTH_GATE_ARM64,
+    desc="hasValidAuth=true inside agy",
+)
+
+# ---------------------------------------------------------------------------
+# Gate 3 (мод 1.3.9): print-mode eligibility (rcx) — чинит
+#   `agy -p "hi"` -> "error: Eligibility check failed: Your current account
+#   is not eligible for Antigravity, because it is not currently available
+#   in your location."
+# В agy 1.4.0 @ 0x8bfda20 (server_oauth-флоу, уникальный, 1 вхождение):
+#   test rax,rax ; jne ok ; test rcx,rcx ; je ok
+#   cmp byte[rcx+8],0 ; jne ok ; call Gate1-wrapper (== ineligible)
+# Решение принимается по [rcx+8] ДО вызова Gate 1, поэтому патч Gate 1
+# (rax) на этот путь не влияет. x64 fix: cmp byte[rcx+8],0 (80 79 08 00)
+# -> test rcx,rcx + nop (48 85 C9 90); rcx здесь non-nil, поэтому jne
+# всегда уводит в ветку eligible. Дисплейсменты wildcard (....), offset=18.
+PRINT_ELIGIBILITY_GATE_X64 = Gate(
+    rb"\x48\x85\xc0\x0f\x85....\x48\x85\xc9\x0f\x84....\x80\x79\x08\x00\x0f\x85....",
+    rb"\x48\x85\xc0\x0f\x85....\x48\x85\xc9\x0f\x84....\x48\x85\xc9\x90\x0f\x85....",
+    b"\x48\x85\xc9\x90",
+    offset=18,
+    desc="print-mode eligibility (rcx) off (x64)",
+)
+
+# arm64-вариант Gate 3 пока не снят (нет arm64-бинаря для сверки).
+PRINT_ELIGIBILITY_GATE = PRINT_ELIGIBILITY_GATE_X64
+
 ALL_GATES = [
     (CLI_GATE, "eligibility screen off"),
+    (AUTH_GATE, "hasValidAuth=true inside agy"),
+    (PRINT_ELIGIBILITY_GATE, "print-mode eligibility (rcx) off"),
 ]
 
 
@@ -256,16 +313,43 @@ def is_already_patched(path):
 
 def _make_backup(path):
     """Снимок чистого файла как <path>.agybak.
-    Вызывается только когда файл unpatched — живые байты это pristine-оригинал.
-    Бэкап, не совпадающий с файлом, устарел (приложение автообновилось) —
-    обновляем его, а не храним."""
+
+    Мод 1.3.9: существующий бэкап НИКОГДА не перезаписываем молча. Иначе
+    апгрейд (живой файл уже патчен, бэкап pristine) уничтожал бы
+    pristine-оригинал как "stale". Держим первый бэкап, а при расхождении
+    пишем рядом timestamp-копию."""
     bak = path + BAK_EXT
     if os.path.exists(bak):
-        if filecmp.cmp(path, bak, shallow=False):
-            return  # бэкап уже соответствует этому билду
-        info(f"Backup is stale (app updated) — refreshing {os.path.basename(path)}{BAK_EXT}")
-    else:
-        info(f"Creating backup -> {os.path.basename(path)}{BAK_EXT}")
+        try:
+            if filecmp.cmp(path, bak, shallow=False):
+                return  # бэкап уже соответствует этому файлу
+        except Exception:
+            pass
+        bak_status = None
+        try:
+            bak_status = get_status(bak)[0]
+        except Exception:
+            bak_status = None
+        if bak_status == "unpatched":
+            # Похоже на pristine-оригинал — сохраняем как есть.
+            hint(f"Keeping existing backup {os.path.basename(bak)} (pristine preserved)")
+            import time
+            ts_bak = f"{bak}.{time.strftime('%Y%m%d-%H%M%S')}"
+            try:
+                shutil.copy2(path, ts_bak)
+                fix_posix_permissions(ts_bak)
+                hint(f"Pre-patch snapshot -> {os.path.basename(ts_bak)}")
+            except Exception:
+                pass
+            return
+        info(f"Backup differs (app updated?) — keeping old, writing {os.path.basename(path)}{BAK_EXT}.new")
+        try:
+            shutil.copy2(path, bak + ".new")
+            fix_posix_permissions(bak + ".new")
+        except Exception:
+            pass
+        return
+    info(f"Creating backup -> {os.path.basename(path)}{BAK_EXT}")
     if sys.platform == "darwin":
         ensure_macos_writable(path)
     try:
