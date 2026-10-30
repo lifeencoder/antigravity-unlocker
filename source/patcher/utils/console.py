@@ -106,24 +106,22 @@ def _frame_row(left, right="", accent=COLOR_CYAN):
 
 
 def print_banner():
-    title_left = color("Open AG Patcher", COLOR_BOLD)
+    title_left = color("Antigravity Unlocker", COLOR_BOLD, COLOR_CYAN)
     title_right = color(f"v{VERSION}", COLOR_GREEN, COLOR_BOLD)
 
-    label_col = 12  # ширина колонки подписей (Telegram/YouTube) для ровной сетки
-    telegram = color("Telegram".ljust(label_col), COLOR_YELLOW) + link("https://t.me/avencoresyt", "t.me/avencoresyt", COLOR_DIM, COLOR_UNDERLINE)
-    youtube = color("YouTube".ljust(label_col), COLOR_YELLOW) + link("https://youtube.com/@avencores", "youtube.com/@avencores", COLOR_DIM, COLOR_UNDERLINE)
-
+    label_col = 10
+    website = color("Website".ljust(label_col), COLOR_YELLOW) + link("https://dastyarai.com", "dastyarai.com", COLOR_CYAN, COLOR_UNDERLINE)
+    telegram = color("Telegram".ljust(label_col), COLOR_YELLOW) + link("https://t.me/fachatbox", "t.me/fachatbox", COLOR_CYAN, COLOR_UNDERLINE)
 
     print()
     print(f"  {_frame_border('╔', '═', '╗')}")
     print(f"  {_frame_row(title_left, title_right)}")
-    print(f"  {_frame_row(color('Region bypass for Antigravity', COLOR_CYAN))}")
-    print(f"  {_frame_row(color('Clean • No keys • No telemetry', COLOR_GREEN))}")
+    print(f"  {_frame_row(color('Brought to you by DastyarAI', COLOR_WHITE))}")
+    print(f"  {_frame_row(color('Clean • Reversible • No VPN Required', COLOR_GREEN))}")
     print(f"  {_frame_border('╟', '─', '╢')}")
+    print(f"  {_frame_row(website)}")
     print(f"  {_frame_row(telegram)}")
-    print(f"  {_frame_row(youtube)}")
     print(f"  {_frame_border('╚', '═', '╝')}")
-
     print()
 
 

@@ -13,11 +13,11 @@ VSVersionInfo(
     StringFileInfo([
       StringTable(
         '040904B0',
-         [StringStruct('CompanyName', 'Antigravity Community'),
+         [StringStruct('CompanyName', 'DastyarAI (https://dastyarai.com)'),
           StringStruct('FileDescription', 'Antigravity Environment & Eligibility Unlocker'),
           StringStruct('FileVersion', '1.3.9'),
           StringStruct('InternalName', 'antigravity_unlocker'),
-          StringStruct('LegalCopyright', '© 2026'),
+          StringStruct('LegalCopyright', '© 2026 DastyarAI'),
           StringStruct('OriginalFilename', 'AntigravityUnlocker.exe'),
           StringStruct('ProductName', 'Antigravity Unlocker'),
           StringStruct('ProductVersion', '1.3.9')])

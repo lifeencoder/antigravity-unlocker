@@ -29,7 +29,7 @@ jobs:
         include:
           - arch: x64
             python-arch: x64
-            output: Open_AG_Patcher_Windows_x64.exe
+            output: AntigravityUnlocker.exe
 
     steps:
       - name: Checkout repository
@@ -49,8 +49,8 @@ jobs:
         run: >
           pyinstaller --onefile
           --uac-admin
-          --icon=icon.ico
-          --name="Open_AG_Patcher_Windows_x64"
+          --icon=app_icon.ico
+          --name="AntigravityUnlocker"
           --noupx
           --clean
           --version-file=version.txt
@@ -90,8 +90,8 @@ jobs:
         run: >
           pyinstaller --onefile
           --uac-admin
-          --icon=icon.ico
-          --name="Open_AG_Patcher_Windows_arm64"
+          --icon=app_icon.ico
+          --name="AntigravityUnlocker_Windows_arm64"
           --noupx
           --clean
           --version-file=version.txt
@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-windows-arm64
-          path: source/dist/Open_AG_Patcher_Windows_arm64.exe
+          path: source/dist/AntigravityUnlocker_Windows_arm64.exe
           if-no-files-found: error
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -128,8 +128,8 @@ jobs:
       - name: Build with PyInstaller
         run: >
           pyinstaller --onefile
-          --icon=icon.ico
-          --name="Open_AG_Patcher_Linux_x64"
+          --icon=app_icon.ico
+          --name="AntigravityUnlocker_Linux_x64"
           --hidden-import=packaging
           --hidden-import=packaging.version
           --hidden-import=packaging.specifiers
@@ -142,7 +142,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-linux-x64
-          path: source/dist/Open_AG_Patcher_Linux_x64
+          path: source/dist/AntigravityUnlocker_Linux_x64
           if-no-files-found: error
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -168,8 +168,8 @@ jobs:
       - name: Build with PyInstaller
         run: >
           pyinstaller --onefile
-          --icon=icon.ico
-          --name="Open_AG_Patcher_Linux_arm64"
+          --icon=app_icon.ico
+          --name="AntigravityUnlocker_Linux_arm64"
           --hidden-import=packaging
           --hidden-import=packaging.version
           --hidden-import=packaging.specifiers
@@ -182,7 +182,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-linux-arm64
-          path: source/dist/Open_AG_Patcher_Linux_arm64
+          path: source/dist/AntigravityUnlocker_Linux_arm64
           if-no-files-found: error
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -208,7 +208,7 @@ jobs:
       - name: Build with PyInstaller (universal2)
         run: >
           pyinstaller --onefile
-          --name="Open_AG_Patcher_macOS"
+          --name="AntigravityUnlocker_macOS"
           --target-arch universal2
           --hidden-import=packaging
           --hidden-import=packaging.version
@@ -222,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-macos-universal2
-          path: source/dist/Open_AG_Patcher_macOS
+          path: source/dist/AntigravityUnlocker_macOS
           if-no-files-found: error
 
   # ─────────────────────────────────────────────────────────────────────────────

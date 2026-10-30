@@ -9,12 +9,13 @@ from patcher.constants import VERSION, COLOR_CYAN, COLOR_GREEN, COLOR_YELLOW, CO
 from patcher.utils.console import color, link, info, ok, warn, err, hint, _frame_border, _frame_row
 
 
-GITHUB_REPO = os.environ.get("OPEN_AG_REPO", "trustybird/AvenCores-open-antigravity-patcher")
+GITHUB_REPO = os.environ.get("OPEN_AG_REPO", "lifeencoder/antigravity-unlocker")
 RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
 ISSUES_URL = f"https://github.com/{GITHUB_REPO}/issues"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 FALLBACK_API_URL = "https://api.github.com/repos/Milordick/open-antigravity-patcher/releases/latest"
-GOIDA_VPN_URL = "https://github.com/AvenCores/goida-vpn-configs"
+DASTYARAI_URL = "https://dastyarai.com"
+TELEGRAM_CHANNEL = "https://t.me/fachatbox"
 
 LAST_UPDATE_RESULT = None
 

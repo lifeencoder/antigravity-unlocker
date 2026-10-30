@@ -318,40 +318,35 @@ def print_target_info(main_js_path, manager_path="", agy_path="", vscode_path=""
 def show_about():
     clear_screen()
     print_banner()
-    print_menu_section("ABOUT OPEN AG PATCHER")
+    print_menu_section("ABOUT ANTIGRAVITY UNLOCKER")
     print()
-    print(f"  {color('Open AG Patcher', COLOR_BOLD, COLOR_CYAN)} v{VERSION}")
+    print(f"  {color('Antigravity Unlocker', COLOR_BOLD, COLOR_CYAN)} v{VERSION}")
     print("  Open-source region lock bypass tool for Antigravity products:")
     print("  Antigravity IDE, Antigravity 2.0 (language_server), and Antigravity CLI (agy).")
-    print("  Allows using Antigravity without VPN or changing Google account region.")
+    print("  Allows using Antigravity seamlessly without VPN or changing account region.")
     print()
     hint("Features:")
-    print(f"   • {color('Antigravity IDE patch', COLOR_GREEN)} — main.js isGoogleInternal bypass")
-    print(f"   • {color('Antigravity 2.0 patch', COLOR_GREEN)} — language_server binary patch")
-    print(f"   • {color('Antigravity CLI patch', COLOR_GREEN)} — agy eligibility check bypass")
-    print(f"   • {color('Backup & Restore', COLOR_GREEN)}     — safe, fully reversible modifications")
+    print(f"   • {color('Antigravity IDE patch', COLOR_GREEN)} • main.js isGoogleInternal bypass")
+    print(f"   • {color('Antigravity 2.0 patch', COLOR_GREEN)} • language_server binary patch")
+    print(f"   • {color('Antigravity CLI patch', COLOR_GREEN)} • agy 1.4.0+ eligibility & auth bypass")
+    print(f"   • {color('Backup & Restore', COLOR_GREEN)}     • safe, fully reversible modifications")
     print()
-    hint("Author & Community:")
-    tg_main = link("https://t.me/avencoresyt", "t.me/avencoresyt", COLOR_CYAN, COLOR_UNDERLINE)
-    tg_chat = link("https://t.me/avencoreschat", "t.me/avencoreschat", COLOR_CYAN, COLOR_UNDERLINE)
-    yt = link("https://youtube.com/@avencores", "youtube.com/@avencores", COLOR_CYAN, COLOR_UNDERLINE)
-    vk = link("https://vk.ru/avencoresreuploads", "vk.ru/avencoresreuploads", COLOR_CYAN, COLOR_UNDERLINE)
-    dz = link("https://dzen.ru/avencores", "dzen.ru/avencores", COLOR_CYAN, COLOR_UNDERLINE)
-    card_num = link("data:text/plain;charset=utf-8,2202%202050%201464%204675", "2202 2050 1464 4675", COLOR_BOLD, COLOR_WHITE, COLOR_UNDERLINE)
+    hint("Official Developer & Community:")
+    web = link("https://dastyarai.com", "https://dastyarai.com", COLOR_CYAN, COLOR_UNDERLINE)
+    tg_news = link("https://t.me/fachatbox", "t.me/fachatbox", COLOR_CYAN, COLOR_UNDERLINE)
+    tg_group = link("https://t.me/dastyaraigroup", "t.me/dastyaraigroup", COLOR_CYAN, COLOR_UNDERLINE)
+    tg_bot = link("https://t.me/FaChatBox_bot", "@FaChatBox_bot", COLOR_CYAN, COLOR_UNDERLINE)
+    about_link = link("https://dastyarai.com/about", "dastyarai.com/about", COLOR_CYAN, COLOR_UNDERLINE)
+
+    print(f"   • Powered by: {color('DastyarAI (دستیار هوشمند فارسی)', COLOR_YELLOW, COLOR_BOLD)}")
+    print(f"   • Website:    {web}")
+    print(f"   • Telegram:   {tg_news} (Group: {tg_group})")
+    print(f"   • AI Bot:     {tg_bot}")
+    print(f"   • About Us:   {about_link}")
+    print()
+    hint("License & Credits:")
     attr_link = link("https://github.com/QNIX-Dev/eligibility-antigravity-patcher", "eligibility-antigravity-patcher", COLOR_CYAN, COLOR_UNDERLINE)
-
-    print(f"   • Author:   {color('AvenCores', COLOR_YELLOW)}")
-    print(f"   • Telegram: {tg_main} (Chat: {tg_chat})")
-    print(f"   • YouTube:  {yt}")
-    print(f"   • VK:       {vk}")
-    print(f"   • Dzen:     {dz}")
-    print()
-    hint("Support Author:")
-    print(f"   • {color('SBER:', COLOR_GREEN)} {card_num}")
-    print()
-    hint("License:")
-    print(f"   • GPL-3.0 License (Attribution: {attr_link} / MIT)")
-
+    print(f"   • License:    GPL-3.0 License (Based on {attr_link})")
 
 
 def redraw_main_screen(main_js_path, manager_path="", agy_path="", vscode_path="", vscode_agy_path="", show_search_line=False):
@@ -549,6 +544,7 @@ def run_cli():
         print_menu_row("10", "Open GitHub repository", "source & updates", COLOR_CYAN)
         print_menu_row("11", "Select custom path", "override auto-detected target", COLOR_CYAN)
         print_menu_row("12", "About program", "information & author links", COLOR_CYAN)
+        print_menu_row("13", "Visit DastyarAI Website", "https://dastyarai.com (AI Tools & News)", COLOR_CYAN)
 
         print()
         print_menu_row("0", "Exit", "quit the patcher", COLOR_RED)
@@ -566,7 +562,7 @@ def run_cli():
                                vscode_agy_path, show_search_line=searched)
             continue
 
-        valid_choices = {str(i) for i in range(1, 13)}
+        valid_choices = {str(i) for i in range(1, 14)}
         if choice not in valid_choices:
             err("Invalid choice")
             print()
@@ -755,6 +751,9 @@ def run_cli():
             handled = True
         elif choice == "12":
             show_about()
+        elif choice == "13":
+            webbrowser.open("https://dastyarai.com")
+            ok("Opening DastyarAI Website: https://dastyarai.com")
 
         print()
 
